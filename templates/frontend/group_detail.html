@@ -27,7 +27,7 @@
       <h6>Settle up</h6>
       <form id="settle-form">
         <select class="form-select form-select-sm mb-2" name="paid_to" required>
-          <option value="" disabled selected>Pay whom?</option>
+          <option value="" disabled selected>Pay to...</option>
         </select>
         <input type="number" step="0.01" min="0.01" class="form-control form-control-sm mb-2" name="amount" placeholder="Amount" required>
         <button type="submit" class="btn btn-sm btn-money w-100">Record payment</button>
@@ -80,7 +80,7 @@
       .join("");
 
     const payToSelect = document.querySelector('select[name="paid_to"]');
-    payToSelect.innerHTML = '<option value="" disabled selected>Pay whom?</option>' + currentGroup.members
+    payToSelect.innerHTML = '<option value="" disabled selected>Pay to...</option>' + currentGroup.members
       .filter((m) => m.username !== Api.currentUsername())
       .map((m) => `<option value="${escapeHtml(m.username)}">${escapeHtml(m.username)}</option>`)
       .join("");
