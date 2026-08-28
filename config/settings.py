@@ -62,11 +62,13 @@ TEMPLATES = [
 WSGI_APPLICATION = "config.wsgi.application"
 
 
-# Database. DATABASE_URL is set in production (Heroku); locally this falls
-# back to a Postgres database matching the docker-compose / local setup.
+# Database. DATABASE_URL is set in production (Heroku) and read from .env
+# locally. Using dj_database_url.parse() on a value from decouple's config()
+# (rather than dj_database_url.config(), which reads os.environ directly)
+# is what actually makes the .env file take effect here.
 DATABASES = {
-    "default": dj_database_url.config(
-        default="postgres://localhost/split_expenses",
+    "default": dj_database_url.parse(
+        config("DATABASE_URL", default="postgres:///split_expenses"),
         conn_max_age=600,
     )
 }
