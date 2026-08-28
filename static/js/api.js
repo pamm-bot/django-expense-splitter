@@ -60,6 +60,14 @@ const Api = {
     return this.request("/auth/login/", { method: "POST", body: { username, password } });
   },
 
+  requestPasswordReset(email) {
+    return this.request("/auth/password-reset/", { method: "POST", body: { email } });
+  },
+
+  confirmPasswordReset(uid, token, password) {
+    return this.request("/auth/password-reset/confirm/", { method: "POST", body: { uid, token, password } });
+  },
+
   listGroups() {
     return this.request("/groups/");
   },

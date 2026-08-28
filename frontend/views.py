@@ -8,6 +8,20 @@ class HomeView(TemplateView):
     template_name = "frontend/home.html"
 
 
+class ResetPasswordRequestView(TemplateView):
+    template_name = "frontend/reset_password_request.html"
+
+
+class ResetPasswordConfirmView(TemplateView):
+    template_name = "frontend/reset_password_confirm.html"
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["uid"] = kwargs["uid"]
+        context["token"] = kwargs["token"]
+        return context
+
+
 class GroupsView(TemplateView):
     template_name = "frontend/groups.html"
 

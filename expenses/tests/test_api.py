@@ -28,6 +28,69 @@ def test_login_returns_a_token(client, create_user):
     assert "token" in response.json()
 
 
+def test_password_reset_request_sends_an_email_for_a_known_address(client, create_user, mailoutbox):
+    create_user("alice", email="alice@example.com")
+
+    response = client.post(
+        reverse("api:password-reset-request"),
+        {"email": "alice@example.com"},
+        content_type="application/json",
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(mailoutbox) == 1
+    assert "alice@example.com" in mailoutbox[0].to
+
+
+def test_password_reset_request_is_silent_for_an_unknown_address(client, mailoutbox):
+    response = client.post(
+        reverse("api:password-reset-request"),
+        {"email": "nobody@example.com"},
+        content_type="application/json",
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    assert len(mailoutbox) == 0
+
+
+def test_password_reset_confirm_changes_the_password(client, create_user):
+    from django.contrib.auth.tokens import default_token_generator
+    from django.utils.encoding import force_bytes
+    from django.utils.http import urlsafe_base64_encode
+
+    user = create_user("alice", email="alice@example.com")
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+
+    response = client.post(
+        reverse("api:password-reset-confirm"),
+        {"uid": uid, "token": token, "password": "newpassword123"},
+        content_type="application/json",
+    )
+
+    assert response.status_code == status.HTTP_200_OK
+    user.refresh_from_db()
+    assert user.check_password("newpassword123")
+
+
+def test_password_reset_confirm_rejects_an_invalid_token(client, create_user):
+    from django.utils.encoding import force_bytes
+    from django.utils.http import urlsafe_base64_encode
+
+    user = create_user("alice", email="alice@example.com")
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+
+    response = client.post(
+        reverse("api:password-reset-confirm"),
+        {"uid": uid, "token": "not-a-real-token", "password": "newpassword123"},
+        content_type="application/json",
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+    user.refresh_from_db()
+    assert not user.check_password("newpassword123")
+
+
 def test_creating_a_group_adds_the_creator_as_a_member(api_client):
     client = api_client(username="alice")
     response = client.post(reverse("api:group-list"), {"name": "Trip to Rome"})

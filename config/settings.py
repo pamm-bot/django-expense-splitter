@@ -104,6 +104,27 @@ REST_FRAMEWORK = {
     ],
 }
 
+# Password reset emails, via Gmail SMTP (an App Password, not the account
+# password). Django 6.1's MAILERS setting replaces the older flat
+# EMAIL_* settings, which are deprecated as of this version. Left blank,
+# the username/password make Django's SMTP backend fail loudly on send —
+# acceptable locally if reset isn't being tested; production always has
+# these set.
+_EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")
+MAILERS = {
+    "default": {
+        "BACKEND": "django.core.mail.backends.smtp.EmailBackend",
+        "OPTIONS": {
+            "host": config("EMAIL_HOST", default="smtp.gmail.com"),
+            "port": config("EMAIL_PORT", default=587, cast=int),
+            "username": _EMAIL_HOST_USER,
+            "password": config("EMAIL_HOST_PASSWORD", default=""),
+            "use_tls": config("EMAIL_USE_TLS", default=True, cast=bool),
+        },
+    },
+}
+DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default=_EMAIL_HOST_USER or "noreply@example.com")
+
 # The frontend is served from the same origin (Django templates + fetch),
 # so CORS only needs to be opened up for local development against a
 # separately-served frontend if that's ever added.

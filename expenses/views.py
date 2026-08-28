@@ -1,5 +1,9 @@
 from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
+from django.utils.encoding import force_bytes, force_str
+from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
 from rest_framework import generics, permissions, status
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
@@ -11,6 +15,8 @@ from .serializers import (
     AddMemberSerializer,
     ExpenseSerializer,
     GroupSerializer,
+    PasswordResetConfirmSerializer,
+    PasswordResetRequestSerializer,
     RegisterSerializer,
     SettlementSerializer,
     UserSerializer,
@@ -22,6 +28,59 @@ class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+
+
+class PasswordResetRequestView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = User.objects.filter(email__iexact=serializer.validated_data["email"]).first()
+        if user is not None:
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            token = default_token_generator.make_token(user)
+            reset_url = f"{request.scheme}://{request.get_host()}/reset-password/{uid}/{token}/"
+            send_mail(
+                subject="Reset your Split Expenses password",
+                message=(
+                    "Someone requested a password reset for this account.\n\n"
+                    f"Reset it here: {reset_url}\n\n"
+                    "If you didn't request this, you can safely ignore this email."
+                ),
+                from_email=None,
+                recipient_list=[user.email],
+                using="default",
+            )
+
+        # Same response either way, so a bad guess can't confirm an email exists.
+        return Response({"detail": "If an account with that email exists, a reset link has been sent."})
+
+
+class PasswordResetConfirmView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+
+        user = None
+        try:
+            user = User.objects.get(pk=force_str(urlsafe_base64_decode(data["uid"])))
+        except (User.DoesNotExist, ValueError, TypeError, OverflowError):
+            pass
+
+        if user is None or not default_token_generator.check_token(user, data["token"]):
+            return Response(
+                {"detail": "This reset link is invalid or has expired."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        user.set_password(data["password"])
+        user.save()
+        return Response({"detail": "Password has been reset."})
 
 
 class GroupNestedMixin:

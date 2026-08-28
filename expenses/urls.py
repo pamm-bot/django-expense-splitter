@@ -4,6 +4,12 @@ from . import views
 
 urlpatterns = [
     path("auth/register/", views.RegisterView.as_view(), name="register"),
+    path("auth/password-reset/", views.PasswordResetRequestView.as_view(), name="password-reset-request"),
+    path(
+        "auth/password-reset/confirm/",
+        views.PasswordResetConfirmView.as_view(),
+        name="password-reset-confirm",
+    ),
     path("groups/", views.GroupListCreateView.as_view(), name="group-list"),
     path("groups/<int:pk>/", views.GroupDetailView.as_view(), name="group-detail"),
     path("groups/<int:group_pk>/members/", views.GroupMembersView.as_view(), name="group-members"),
