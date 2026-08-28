@@ -2,11 +2,11 @@
 {% block title %}Split Expenses{% endblock %}
 {% block content %}
 <div class="row justify-content-center g-4">
-  <div class="col-md-5">
+  <div class="col-md-5 d-flex flex-column">
     <p class="text-muted mb-2 text-center">Already have an account?</p>
-    <div class="card p-4">
+    <div class="card p-4 flex-fill d-flex flex-column">
       <h4 class="mb-3">Log in</h4>
-      <form id="login-form">
+      <form id="login-form" class="d-flex flex-column flex-fill">
         <div class="mb-2">
           <input type="text" class="form-control" name="username" placeholder="Username" required>
         </div>
@@ -14,16 +14,16 @@
           <input type="password" class="form-control" name="password" placeholder="Password" required>
         </div>
         <div id="login-error" class="text-danger small mb-2"></div>
-        <button type="submit" class="btn btn-money w-100">Log in</button>
+        <button type="submit" class="btn btn-money w-100 mt-auto">Log in</button>
       </form>
     </div>
   </div>
 
-  <div class="col-md-5">
+  <div class="col-md-5 d-flex flex-column">
     <p class="text-muted mb-2 text-center">New here?</p>
-    <div class="card p-4">
+    <div class="card p-4 flex-fill d-flex flex-column">
       <h4 class="mb-3">Sign up</h4>
-      <form id="register-form">
+      <form id="register-form" class="d-flex flex-column flex-fill">
         <div class="mb-2">
           <input type="text" class="form-control" name="username" placeholder="Username" required>
         </div>
@@ -34,7 +34,7 @@
           <input type="password" class="form-control" name="password" placeholder="Password (min. 8 characters)" required minlength="8">
         </div>
         <div id="register-error" class="text-danger small mb-2"></div>
-        <button type="submit" class="btn btn-money w-100">Create account</button>
+        <button type="submit" class="btn btn-money w-100 mt-auto">Create account</button>
       </form>
     </div>
   </div>
