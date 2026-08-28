@@ -108,14 +108,30 @@
     }
 
     list.innerHTML = expenses.slice().reverse().map((expense) => `
-      <li class="list-group-item d-flex justify-content-between align-items-center">
+      <li class="list-group-item d-flex justify-content-between align-items-center" data-expense-id="${expense.id}">
         <div>
           <strong>${escapeHtml(expense.description)}</strong>
           <div class="small text-muted">Paid by ${escapeHtml(expense.paid_by.username)}</div>
         </div>
-        <span class="amount">€${expense.amount}</span>
+        <div class="d-flex align-items-center gap-3">
+          <span class="amount">€${expense.amount}</span>
+          <button type="button" class="btn btn-sm btn-outline-danger delete-expense-btn" data-expense-id="${expense.id}" aria-label="Delete expense">&times;</button>
+        </div>
       </li>
     `).join("");
+
+    list.querySelectorAll(".delete-expense-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        if (!confirm("Delete this expense?")) return;
+        try {
+          await Api.deleteExpense(groupId, btn.dataset.expenseId);
+          loadExpenses();
+          loadBalances();
+        } catch (err) {
+          alert(err.message);
+        }
+      });
+    });
   }
 
   async function loadBalances() {

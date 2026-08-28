@@ -86,6 +86,41 @@ def test_expense_with_equal_split_creates_matching_shares(api_client):
     assert shares == {"alice": "50.00", "bob": "50.00"}
 
 
+def test_a_group_member_can_delete_an_expense(api_client):
+    from expenses.models import Expense
+
+    alice_client = api_client(username="alice")
+    group_id = alice_client.post(reverse("api:group-list"), {"name": "Trip"}).json()["id"]
+    expense_id = alice_client.post(
+        reverse("api:expense-list", args=[group_id]),
+        {"description": "Dinner", "amount": "100.00", "split_equally_among": ["alice"]},
+        format="json",
+    ).json()["id"]
+
+    response = alice_client.delete(reverse("api:expense-detail", args=[group_id, expense_id]))
+
+    assert response.status_code == status.HTTP_204_NO_CONTENT
+    assert not Expense.objects.filter(pk=expense_id).exists()
+
+
+def test_a_non_member_cannot_delete_an_expense(api_client):
+    from expenses.models import Expense
+
+    alice_client = api_client(username="alice")
+    bob_client = api_client(username="bob")
+    group_id = alice_client.post(reverse("api:group-list"), {"name": "Trip"}).json()["id"]
+    expense_id = alice_client.post(
+        reverse("api:expense-list", args=[group_id]),
+        {"description": "Dinner", "amount": "100.00", "split_equally_among": ["alice"]},
+        format="json",
+    ).json()["id"]
+
+    response = bob_client.delete(reverse("api:expense-detail", args=[group_id, expense_id]))
+
+    assert response.status_code == status.HTTP_403_FORBIDDEN
+    assert Expense.objects.filter(pk=expense_id).exists()
+
+
 def test_expense_with_custom_shares_must_add_up_to_the_total(api_client):
     alice_client = api_client(username="alice")
     group_id = alice_client.post(reverse("api:group-list"), {"name": "Trip"}).json()["id"]
