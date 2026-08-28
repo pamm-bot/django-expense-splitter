@@ -15,7 +15,8 @@ would use.
 
 ## Features
 
-- **Accounts** — token-based authentication; register and log in via the API
+- **Accounts** — token-based authentication; register and log in via the API,
+  with email-based password reset if you forget it
 - **Groups** — create a group, add members by username
 - **Expenses** — log what was paid and by whom, split equally across
   members or with custom per-person amounts
@@ -40,6 +41,8 @@ would use.
 |---|---|---|
 | `/api/auth/register/` | POST | Create an account |
 | `/api/auth/login/` | POST | Get an auth token |
+| `/api/auth/password-reset/` | POST | Request a reset email |
+| `/api/auth/password-reset/confirm/` | POST | Set a new password from the emailed link |
 | `/api/groups/` | GET, POST | List / create your groups |
 | `/api/groups/<id>/` | GET, PATCH, DELETE | Group detail (delete: creator only) |
 | `/api/groups/<id>/members/` | POST | Add a member by username |
@@ -60,6 +63,11 @@ cp .env.example .env   # then edit SECRET_KEY, DATABASE_URL, etc.
 python manage.py migrate
 python manage.py runserver
 ```
+
+Password reset emails need a Gmail account with an
+[App Password](https://myaccount.google.com/apppasswords) (`EMAIL_HOST_USER`
+/ `EMAIL_HOST_PASSWORD` in `.env`) — optional locally, reset requests just
+won't send without it.
 
 The frontend is served from the same app at `/`.
 
