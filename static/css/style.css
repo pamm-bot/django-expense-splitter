@@ -1,59 +1,134 @@
 :root {
-  --money-green: #1b8a5a;
-  --money-green-dark: #146b45;
-  --owed-red: #c0392b;
+  --bg: #0f1115;
+  --bg-raised: #16191f;
+  --border: #2a2e37;
+  --text: #e8e9ec;
+  --text-muted: #8a8f9c;
+  --accent: #f5a623;
+  --accent-dark: #cf8a15;
+  --positive: #2fd47a;
+  --negative: #ef5a5a;
 }
 
 body {
-  background-color: #f6f8f7;
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: "Space Grotesk", system-ui, -apple-system, sans-serif;
 }
 
+.mono, .amount {
+  font-family: "JetBrains Mono", ui-monospace, "SF Mono", monospace;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Navbar: flat, bottom border, no colored block */
 .navbar {
-  background-color: var(--money-green);
+  background-color: var(--bg) !important;
+  border-bottom: 1px solid var(--border);
 }
 
-.btn-money {
-  background-color: var(--money-green);
-  border-color: var(--money-green);
-  color: #fff;
+.navbar-brand {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text) !important;
 }
 
-.btn-money:hover {
-  background-color: var(--money-green-dark);
-  border-color: var(--money-green-dark);
-  color: #fff;
+/* Flat panels instead of soft-shadow Bootstrap cards */
+.card {
+  background-color: var(--bg-raised);
+  border: 1px solid var(--border) !important;
+  border-radius: 6px;
+  box-shadow: none;
+  color: var(--text);
 }
 
-a.link-money {
-  color: var(--money-green);
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+a { color: var(--accent); }
+a:hover { color: var(--accent-dark); }
+
+.link-money {
+  color: var(--accent);
   text-decoration: none;
   font-weight: 600;
 }
 
-a.link-money:hover {
-  color: var(--money-green-dark);
+.link-money:hover { color: var(--accent-dark); }
+
+.btn-money {
+  background-color: var(--accent);
+  border-color: var(--accent);
+  color: #14161a;
+  font-weight: 600;
+  border-radius: 4px;
+}
+
+.btn-money:hover {
+  background-color: var(--accent-dark);
+  border-color: var(--accent-dark);
+  color: #14161a;
+}
+
+.btn-outline-secondary, .btn-outline-danger {
+  border-radius: 4px;
 }
 
 .balance-positive {
-  color: var(--money-green);
+  color: var(--positive);
   font-weight: 600;
 }
 
 .balance-negative {
-  color: var(--owed-red);
+  color: var(--negative);
   font-weight: 600;
 }
 
-.card {
-  border: none;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+/* Form controls, dark */
+.form-control, .form-select {
+  background-color: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 4px;
 }
 
-.group-card {
-  cursor: pointer;
-  transition: transform 0.1s ease;
+.form-control:focus, .form-select:focus {
+  background-color: var(--bg);
+  color: var(--text);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem rgba(245, 166, 35, 0.2);
 }
 
-.group-card:hover {
-  transform: translateY(-2px);
+.form-control::placeholder { color: var(--text-muted); }
+
+.text-muted { color: var(--text-muted) !important; }
+
+/* Groups: flat statement-style rows instead of a card grid */
+.group-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 0.5rem;
+  text-decoration: none;
+  color: var(--text);
+  transition: border-color 0.15s ease;
 }
+
+.group-row:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+/* Expenses: ledger line items */
+.list-group-item {
+  background-color: transparent;
+  border-color: var(--border) !important;
+  color: var(--text);
+}
+
+hr { border-color: var(--border); }

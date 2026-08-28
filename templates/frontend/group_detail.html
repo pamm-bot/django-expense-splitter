@@ -113,7 +113,7 @@
           <strong>${escapeHtml(expense.description)}</strong>
           <div class="small text-muted">Paid by ${escapeHtml(expense.paid_by.username)}</div>
         </div>
-        <span>€${expense.amount}</span>
+        <span class="amount">€${expense.amount}</span>
       </li>
     `).join("");
   }
@@ -128,14 +128,14 @@
       list.innerHTML = balances.map((entry) => {
         const positive = parseFloat(entry.amount) > 0;
         const label = positive ? "is owed" : "owes";
-        return `<li>${escapeHtml(entry.user.username)} <span class="${positive ? "balance-positive" : "balance-negative"}">${label} €${Math.abs(parseFloat(entry.amount)).toFixed(2)}</span></li>`;
+        return `<li>${escapeHtml(entry.user.username)} <span class="amount ${positive ? "balance-positive" : "balance-negative"}">${label} €${Math.abs(parseFloat(entry.amount)).toFixed(2)}</span></li>`;
       }).join("");
     }
 
     const suggestions = document.getElementById("settlements-suggestions");
     if (suggested_settlements.length > 0) {
       suggestions.innerHTML = `<small class="text-muted d-block mb-1">Suggested:</small>` + suggested_settlements.map((txn) =>
-        `<div class="small">${escapeHtml(txn.from.username)} → ${escapeHtml(txn.to.username)}: €${txn.amount}</div>`
+        `<div class="small mono">${escapeHtml(txn.from.username)} → ${escapeHtml(txn.to.username)}: €${txn.amount}</div>`
       ).join("");
     } else {
       suggestions.innerHTML = "";
