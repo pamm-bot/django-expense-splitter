@@ -1,0 +1,59 @@
+:root {
+  --money-green: #1b8a5a;
+  --money-green-dark: #146b45;
+  --owed-red: #c0392b;
+}
+
+body {
+  background-color: #f6f8f7;
+}
+
+.navbar {
+  background-color: var(--money-green);
+}
+
+.btn-money {
+  background-color: var(--money-green);
+  border-color: var(--money-green);
+  color: #fff;
+}
+
+.btn-money:hover {
+  background-color: var(--money-green-dark);
+  border-color: var(--money-green-dark);
+  color: #fff;
+}
+
+a.link-money {
+  color: var(--money-green);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+a.link-money:hover {
+  color: var(--money-green-dark);
+}
+
+.balance-positive {
+  color: var(--money-green);
+  font-weight: 600;
+}
+
+.balance-negative {
+  color: var(--owed-red);
+  font-weight: 600;
+}
+
+.card {
+  border: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.group-card {
+  cursor: pointer;
+  transition: transform 0.1s ease;
+}
+
+.group-card:hover {
+  transform: translateY(-2px);
+}

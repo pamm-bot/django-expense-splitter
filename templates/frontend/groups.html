@@ -1,0 +1,51 @@
+{% extends "frontend/base.html" %}
+{% block title %}Your groups · Split Expenses{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h2 class="mb-0">Your groups</h2>
+</div>
+
+<form id="create-group-form" class="d-flex gap-2 mb-4" style="max-width: 400px;">
+  <input type="text" class="form-control" name="name" placeholder="New group name" required>
+  <button type="submit" class="btn btn-money text-nowrap">Create</button>
+</form>
+
+<div id="groups-list" class="row g-3"></div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  if (!Api.token()) window.location.href = "/";
+
+  async function loadGroups() {
+    const groups = await Api.listGroups();
+    const list = document.getElementById("groups-list");
+
+    if (groups.length === 0) {
+      list.innerHTML = `<p class="text-muted">No groups yet — create one above.</p>`;
+      return;
+    }
+
+    list.innerHTML = groups.map((group) => `
+      <div class="col-md-4">
+        <a href="/groups/${group.id}/" class="text-decoration-none text-dark">
+          <div class="card group-card p-3">
+            <h5 class="mb-1">${group.name}</h5>
+            <small class="text-muted">${group.members.length} member${group.members.length === 1 ? "" : "s"}</small>
+          </div>
+        </a>
+      </div>
+    `).join("");
+  }
+
+  document.getElementById("create-group-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = new FormData(e.target);
+    await Api.createGroup(form.get("name"));
+    e.target.reset();
+    loadGroups();
+  });
+
+  loadGroups();
+</script>
+{% endblock %}
