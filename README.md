@@ -1,5 +1,7 @@
 # Split Expenses
 
+[![CI](https://github.com/pamm-bot/django-expense-splitter/actions/workflows/ci.yml/badge.svg)](https://github.com/pamm-bot/django-expense-splitter/actions/workflows/ci.yml)
+
 A Splitwise-style expense splitter: create a group, log shared expenses, and
 see who owes whom — with a debt-simplification algorithm that works out the
 fewest payments needed to settle everyone up.
@@ -8,6 +10,8 @@ Built as a REST API (Django REST Framework) with a small JS frontend
 consuming it over HTTP, rather than a single server-rendered app — the two
 sides only ever talk through the same JSON endpoints an external client
 would use.
+
+**Live demo:** https://split-expenses-pam-05e9be4c8938.herokuapp.com/
 
 ## Features
 
