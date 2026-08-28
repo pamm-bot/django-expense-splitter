@@ -103,6 +103,21 @@ a:hover { color: var(--accent-dark); }
 
 .form-control::placeholder { color: var(--text-muted); }
 
+.form-check-input {
+  background-color: var(--bg);
+  border-color: var(--border);
+}
+
+.form-check-input:checked {
+  background-color: var(--accent);
+  border-color: var(--accent);
+}
+
+.form-check-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 0.2rem rgba(245, 166, 35, 0.2);
+}
+
 .text-muted { color: var(--text-muted) !important; }
 
 /* Groups: flat statement-style rows instead of a card grid */
