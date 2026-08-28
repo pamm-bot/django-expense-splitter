@@ -76,6 +76,16 @@ a:hover { color: var(--accent-dark); }
   border-radius: 4px;
 }
 
+/* A softer, muted red instead of Bootstrap's bright default — still
+   reads as "destructive", without clashing with the dark theme. */
+.btn-outline-danger {
+  --bs-btn-color: #c17b7d;
+  --bs-btn-border-color: #6b3336;
+  --bs-btn-hover-bg: #6b3336;
+  --bs-btn-hover-border-color: #6b3336;
+  --bs-btn-hover-color: #f3d9da;
+}
+
 .balance-positive {
   color: var(--positive);
   font-weight: 600;
