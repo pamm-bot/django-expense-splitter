@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "rest_framework.authtoken",
+    "drf_spectacular",
     "corsheaders",
     "expenses",
     "frontend",
@@ -102,6 +103,28 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 50,
+    # Scoped throttling: only views that set `throttle_scope` are limited
+    # (the auth endpoints), everything else is untouched.
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.ScopedRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "auth": "20/hour",
+        "password_reset": "5/hour",
+    },
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Split Expenses API",
+    "DESCRIPTION": (
+        "A Splitwise-style expense splitter: groups, shared expenses, "
+        "net balances, and greedy debt simplification."
+    ),
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }
 
 # Password reset emails, via Gmail SMTP (an App Password, not the account

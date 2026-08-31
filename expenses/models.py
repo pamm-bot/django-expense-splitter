@@ -13,6 +13,9 @@ class Group(models.Model):
     members = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name="expense_groups")
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ["-created_at"]
+
     def __str__(self):
         return self.name
 
@@ -25,6 +28,9 @@ class Expense(models.Model):
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="expenses_paid"
     )
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
 
     def __str__(self):
         return f"{self.description} ({self.amount})"
@@ -63,6 +69,9 @@ class Settlement(models.Model):
     )
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["created_at"]
 
     def clean(self):
         if self.paid_by_id and self.paid_by_id == self.paid_to_id:

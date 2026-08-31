@@ -28,6 +28,17 @@ def test_login_returns_a_token(client, create_user):
     assert "token" in response.json()
 
 
+def test_login_is_rate_limited(client):
+    url = reverse("api-login")
+    body = {"username": "nobody", "password": "wrong"}
+    for _ in range(20):
+        client.post(url, body, content_type="application/json")
+
+    response = client.post(url, body, content_type="application/json")
+
+    assert response.status_code == status.HTTP_429_TOO_MANY_REQUESTS
+
+
 def test_password_reset_request_sends_an_email_for_a_known_address(client, create_user, mailoutbox):
     create_user("alice", email="alice@example.com")
 
@@ -107,7 +118,7 @@ def test_group_list_only_shows_the_users_own_groups(api_client):
 
     response = alice_client.get(reverse("api:group-list"))
 
-    assert [g["name"] for g in response.json()] == ["Alice's group"]
+    assert [g["name"] for g in response.json()["results"]] == ["Alice's group"]
 
 
 def test_non_member_cannot_view_a_group(api_client):

@@ -4,9 +4,12 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.encoding import force_bytes, force_str
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-from rest_framework import generics, permissions, status
+from drf_spectacular.utils import extend_schema, inline_serializer
+from rest_framework import generics, permissions, serializers, status
+from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 
 from .models import Group
@@ -23,15 +26,30 @@ from .serializers import (
 )
 from .services import compute_balances, simplify_debts
 
+# The plain-text `{"detail": "..."}` body the password-reset views return.
+_detail_response = inline_serializer(name="DetailResponse", fields={"detail": serializers.CharField()})
+
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+    throttle_scope = "auth"
 
 
+class LoginView(ObtainAuthToken):
+    """DRF's token login, with throttling so it can't be brute-forced.
+    ObtainAuthToken clears throttle_classes, so the scoped throttle has to
+    be put back explicitly here."""
+
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = "auth"
+
+
+@extend_schema(request=PasswordResetRequestSerializer, responses=_detail_response)
 class PasswordResetRequestView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_scope = "password_reset"
 
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
@@ -58,8 +76,10 @@ class PasswordResetRequestView(APIView):
         return Response({"detail": "If an account with that email exists, a reset link has been sent."})
 
 
+@extend_schema(request=PasswordResetConfirmSerializer, responses=_detail_response)
 class PasswordResetConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
+    throttle_scope = "auth"
 
     def post(self, request):
         serializer = PasswordResetConfirmSerializer(data=request.data)
@@ -164,6 +184,27 @@ class SettlementListCreateView(GroupNestedMixin, generics.ListCreateAPIView):
         return context
 
 
+@extend_schema(
+    responses=inline_serializer(
+        name="GroupBalances",
+        fields={
+            "balances": inline_serializer(
+                name="MemberBalance",
+                many=True,
+                fields={"user": UserSerializer(), "amount": serializers.CharField()},
+            ),
+            "suggested_settlements": inline_serializer(
+                name="SuggestedSettlement",
+                many=True,
+                fields={
+                    "from": UserSerializer(),
+                    "to": UserSerializer(),
+                    "amount": serializers.CharField(),
+                },
+            ),
+        },
+    )
+)
 class BalancesView(GroupNestedMixin, APIView):
     permission_classes = [permissions.IsAuthenticated, IsGroupMember]
 

@@ -68,8 +68,11 @@ const Api = {
     return this.request("/auth/password-reset/confirm/", { method: "POST", body: { uid, token, password } });
   },
 
-  listGroups() {
-    return this.request("/groups/");
+  // List endpoints are paginated (DRF PageNumberPagination); the pages here
+  // are always well under PAGE_SIZE, so just hand back the results array.
+  async listGroups() {
+    const data = await this.request("/groups/");
+    return data.results ?? data;
   },
 
   createGroup(name) {
@@ -88,8 +91,9 @@ const Api = {
     return this.request(`/groups/${groupId}/members/`, { method: "POST", body: { username } });
   },
 
-  listExpenses(groupId) {
-    return this.request(`/groups/${groupId}/expenses/`);
+  async listExpenses(groupId) {
+    const data = await this.request(`/groups/${groupId}/expenses/`);
+    return data.results ?? data;
   },
 
   createExpense(groupId, payload) {
