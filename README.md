@@ -135,8 +135,13 @@ source venv/bin/activate
 pip install -r requirements-dev.txt
 cp .env.example .env   # then edit SECRET_KEY, DATABASE_URL, etc.
 python manage.py migrate
+python manage.py seed_demo   # optional: a populated "Weekend in Lisbon" group
 python manage.py runserver
 ```
+
+`seed_demo` creates the `demo` / `demo12345` login and a group with a
+handful of expenses and a settlement, so the balances and suggested-payment
+views have something to show. It's safe to re-run — it resets that data.
 
 Password reset emails need a Gmail account with an
 [App Password](https://myaccount.google.com/apppasswords) (`EMAIL_HOST_USER`
