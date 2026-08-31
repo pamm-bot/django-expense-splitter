@@ -9,3 +9,6 @@ staticfiles/
 *.log
 .DS_Store
 .pytest_cache/
+.claude/
+.idea/
+.vscode/
