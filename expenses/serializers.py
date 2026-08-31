@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from django.contrib.auth.models import User
+from django.db import transaction
 from rest_framework import serializers
 
 from .models import Expense, ExpenseShare, Group, Settlement
@@ -79,10 +80,29 @@ class ExpenseSerializer(serializers.ModelSerializer):
         fields = ["id", "description", "amount", "paid_by", "shares", "split_equally_among", "created_at"]
 
     def validate(self, data):
-        if not data.get("shares") and not data.get("split_equally_among"):
+        shares = data.get("shares")
+        split_equally_among = data.get("split_equally_among")
+
+        if not shares and not split_equally_among:
             raise serializers.ValidationError("Provide either shares or split_equally_among.")
+
+        # Everything that could fail is checked here, before create() writes
+        # anything, so a bad request never leaves a half-built expense behind.
+        if split_equally_among:
+            found = User.objects.filter(username__in=split_equally_among).count()
+            if found != len(split_equally_among):
+                raise serializers.ValidationError(
+                    "One or more usernames in split_equally_among were not found."
+                )
+        elif shares:
+            if len({share["user"] for share in shares}) != len(shares):
+                raise serializers.ValidationError("Each user can appear at most once in shares.")
+            if sum((share["amount"] for share in shares), Decimal("0")) != data["amount"]:
+                raise serializers.ValidationError("Shares must add up to the expense amount.")
+
         return data
 
+    @transaction.atomic
     def create(self, validated_data):
         group = self.context["group"]
         split_equally_among = validated_data.pop("split_equally_among", None)
@@ -91,23 +111,13 @@ class ExpenseSerializer(serializers.ModelSerializer):
         expense = Expense.objects.create(group=group, paid_by=self.context["request"].user, **validated_data)
 
         if split_equally_among:
-            usernames = split_equally_among
-            users = list(User.objects.filter(username__in=usernames))
-            if len(users) != len(usernames):
-                expense.delete()
-                raise serializers.ValidationError(
-                    "One or more usernames in split_equally_among were not found."
-                )
+            users = list(User.objects.filter(username__in=split_equally_among))
             share_amount = (expense.amount / len(users)).quantize(Decimal("0.01"))
             remainder = expense.amount - (share_amount * len(users))
             for index, user in enumerate(users):
                 amount = share_amount + (remainder if index == 0 else Decimal("0"))
                 ExpenseShare.objects.create(expense=expense, user=user, amount=amount)
         else:
-            total = sum((share["amount"] for share in shares_data), Decimal("0"))
-            if total != expense.amount:
-                expense.delete()
-                raise serializers.ValidationError("Shares must add up to the expense amount.")
             for share in shares_data:
                 ExpenseShare.objects.create(expense=expense, **share)
 

@@ -201,6 +201,36 @@ def test_expense_with_custom_shares_must_add_up_to_the_total(api_client):
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
+def test_expense_creation_rolls_back_if_a_share_fails(api_client, monkeypatch):
+    from expenses.models import Expense, ExpenseShare
+
+    alice_client = api_client(username="alice")
+    api_client(username="bob")
+    group_id = alice_client.post(reverse("api:group-list"), {"name": "Trip"}).json()["id"]
+
+    real_create = ExpenseShare.objects.create
+    calls = []
+
+    def flaky_create(*args, **kwargs):
+        calls.append(1)
+        if len(calls) == 2:
+            raise RuntimeError("share write blew up")
+        return real_create(*args, **kwargs)
+
+    monkeypatch.setattr(ExpenseShare.objects, "create", flaky_create)
+
+    with pytest.raises(RuntimeError):
+        alice_client.post(
+            reverse("api:expense-list", args=[group_id]),
+            {"description": "Dinner", "amount": "90.00", "split_equally_among": ["alice", "bob"]},
+            format="json",
+        )
+
+    # The expense and its first share were rolled back with the failed one.
+    assert not Expense.objects.filter(group_id=group_id).exists()
+    assert not ExpenseShare.objects.exists()
+
+
 def test_balances_endpoint_reflects_expenses_and_settlements(api_client):
     alice_client = api_client(username="alice")
     bob_client = api_client(username="bob")
