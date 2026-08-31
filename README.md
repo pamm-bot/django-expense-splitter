@@ -11,7 +11,15 @@ consuming it over HTTP, rather than a single server-rendered app — the two
 sides only ever talk through the same JSON endpoints an external client
 would use.
 
-**Live demo:** https://split-expenses-pam-05e9be4c8938.herokuapp.com/
+**Live demo:** https://split-expenses-pam-05e9be4c8938.herokuapp.com/ — log
+in as `demo` / `demo12345` for a pre-populated group, or register your own
+account.
+
+## Screenshots
+
+| Group page | API docs |
+|---|---|
+| [![Group detail: members, expenses, balances and suggested settlements](docs/screenshots/group-detail.png)](docs/screenshots/group-detail.png) | [![Swagger UI generated from the OpenAPI schema](docs/screenshots/api-docs.png)](docs/screenshots/api-docs.png) |
 
 ## Features
 
