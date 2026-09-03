@@ -2,6 +2,8 @@
 
 [![CI](https://github.com/pamm-bot/django-expense-splitter/actions/workflows/ci.yml/badge.svg)](https://github.com/pamm-bot/django-expense-splitter/actions/workflows/ci.yml)
 
+**English** · [Français](README.fr.md)
+
 A Splitwise-style expense splitter: create a group, log shared expenses, and
 see who owes whom — with a debt-simplification algorithm that works out the
 fewest payments needed to settle everyone up.
