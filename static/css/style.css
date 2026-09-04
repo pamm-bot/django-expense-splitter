@@ -50,6 +50,19 @@ h1, h2, h3, h4, h5, h6 {
 a { color: var(--accent); }
 a:hover { color: var(--accent-dark); }
 
+/* Bootstrap caps .container at 1320px, so on a large monitor the whole
+   UI looked tiny in the middle of the screen. Scale the root font up, and
+   let the container grow a little — the content is narrow by design, so
+   it doesn't need the full width. */
+@media (min-width: 1500px) {
+  html { font-size: 17px; }
+}
+
+@media (min-width: 2000px) {
+  html { font-size: 18px; }
+  .container { max-width: 1400px; }
+}
+
 .link-money {
   color: var(--accent);
   text-decoration: none;
