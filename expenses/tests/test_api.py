@@ -212,12 +212,37 @@ def test_expense_with_custom_shares_must_add_up_to_the_total(api_client):
     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
 
+def test_expense_cannot_be_split_among_non_members(api_client):
+    alice_client = api_client(username="alice")
+    api_client(username="carol")  # exists, but never added to the group
+    group_id = alice_client.post(reverse("api:group-list"), {"name": "Trip"}).json()["id"]
+
+    equal = alice_client.post(
+        reverse("api:expense-list", args=[group_id]),
+        {"description": "Dinner", "amount": "50.00", "split_equally_among": ["alice", "carol"]},
+        format="json",
+    )
+    custom = alice_client.post(
+        reverse("api:expense-list", args=[group_id]),
+        {
+            "description": "Taxi",
+            "amount": "20.00",
+            "shares": [{"user": "alice", "amount": "10.00"}, {"user": "carol", "amount": "10.00"}],
+        },
+        format="json",
+    )
+
+    assert equal.status_code == status.HTTP_400_BAD_REQUEST
+    assert custom.status_code == status.HTTP_400_BAD_REQUEST
+
+
 def test_expense_creation_rolls_back_if_a_share_fails(api_client, monkeypatch):
     from expenses.models import Expense, ExpenseShare
 
     alice_client = api_client(username="alice")
     api_client(username="bob")
     group_id = alice_client.post(reverse("api:group-list"), {"name": "Trip"}).json()["id"]
+    alice_client.post(reverse("api:group-members", args=[group_id]), {"username": "bob"})
 
     real_create = ExpenseShare.objects.create
     calls = []
@@ -270,6 +295,18 @@ def test_cannot_settle_up_with_yourself(api_client):
 
     response = alice_client.post(
         reverse("api:settlement-list", args=[group_id]), {"paid_to": "alice", "amount": "10.00"}
+    )
+
+    assert response.status_code == status.HTTP_400_BAD_REQUEST
+
+
+def test_cannot_settle_up_with_a_non_member(api_client):
+    alice_client = api_client(username="alice")
+    api_client(username="carol")  # exists, but not in the group
+    group_id = alice_client.post(reverse("api:group-list"), {"name": "Trip"}).json()["id"]
+
+    response = alice_client.post(
+        reverse("api:settlement-list", args=[group_id]), {"paid_to": "carol", "amount": "10.00"}
     )
 
     assert response.status_code == status.HTTP_400_BAD_REQUEST

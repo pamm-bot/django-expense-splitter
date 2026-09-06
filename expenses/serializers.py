@@ -88,19 +88,27 @@ class ExpenseSerializer(serializers.ModelSerializer):
 
         # Everything that could fail is checked here, before create() writes
         # anything, so a bad request never leaves a half-built expense behind.
+        members = set(self.context["group"].members.values_list("username", flat=True))
+
         if split_equally_among:
-            found = User.objects.filter(username__in=split_equally_among).count()
-            if found != len(split_equally_among):
-                raise serializers.ValidationError(
-                    "One or more usernames in split_equally_among were not found."
-                )
+            if len(split_equally_among) != len(set(split_equally_among)):
+                raise serializers.ValidationError("split_equally_among lists someone twice.")
+            self._reject_non_members(split_equally_among, members)
         elif shares:
-            if len({share["user"] for share in shares}) != len(shares):
+            usernames = [share["user"].username for share in shares]
+            if len(usernames) != len(set(usernames)):
                 raise serializers.ValidationError("Each user can appear at most once in shares.")
+            self._reject_non_members(usernames, members)
             if sum((share["amount"] for share in shares), Decimal("0")) != data["amount"]:
                 raise serializers.ValidationError("Shares must add up to the expense amount.")
 
         return data
+
+    @staticmethod
+    def _reject_non_members(usernames, members):
+        outsiders = sorted(set(usernames) - members)
+        if outsiders:
+            raise serializers.ValidationError(f"Not a member of this group: {', '.join(outsiders)}.")
 
     @transaction.atomic
     def create(self, validated_data):
@@ -131,6 +139,11 @@ class SettlementSerializer(serializers.ModelSerializer):
     class Meta:
         model = Settlement
         fields = ["id", "paid_by", "paid_to", "amount", "created_at"]
+
+    def validate_paid_to(self, user):
+        if not self.context["group"].members.filter(pk=user.pk).exists():
+            raise serializers.ValidationError("This person isn't a member of the group.")
+        return user
 
     def create(self, validated_data):
         group = self.context["group"]
